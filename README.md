@@ -162,13 +162,15 @@ php -S localhost:8080
 
 ## 📱 安装为手机应用
 
+打开体验版网址：[**1dlbbbdbd1.github.io/2048game/**](https://1dlbbbdbd1.github.io/2048game/)
+
 ### Android（Chrome）
-1. 用 Chrome 打开游戏网址
+1. 用 Chrome 打开上方体验版网址
 2. 点击右上角菜单 → **"添加到主屏幕"**
 3. 图标会出现在桌面，点击即可像原生 APP 一样启动
 
 ### iOS（Safari）
-1. 用 Safari 打开游戏网址
+1. 用 Safari 打开上方体验版网址
 2. 点击底部分享按钮 → **"添加到主屏幕"**
 3. 图标会出现在桌面
 
