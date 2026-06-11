@@ -2,6 +2,7 @@
     "name": "2048 经典游戏",
     "short_name": "2048",
     "description": "经典数字合并游戏，支持多种棋盘大小",
+    "version": "1.3.4",
     "start_url": "/",
     "display": "standalone",
     "orientation": "portrait",

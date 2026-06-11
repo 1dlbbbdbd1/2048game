@@ -1,3 +1,4 @@
+// 2048 v1.3.4 稳定版
 class Game {
     constructor(size = 4) {
         this.size = size;

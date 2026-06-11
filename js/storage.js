@@ -1,3 +1,4 @@
+// 2048 v1.3.4 稳定版
 const Storage = (() => {
     const SETTINGS_KEY = 'tcs_settings';
     const LEADERBOARD_KEY = 'tcs_leaderboard';

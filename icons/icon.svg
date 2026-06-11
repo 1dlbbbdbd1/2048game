@@ -1,3 +1,4 @@
+<!-- 2048 v1.3.4 稳定版 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <rect width="100" height="100" rx="10" fill="#bbada0"/>
   <text x="50" y="62" font-family="Arial, sans-serif" font-size="36" font-weight="800" fill="#f9f6f2" text-anchor="middle">2048</text>
