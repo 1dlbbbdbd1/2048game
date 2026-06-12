@@ -20,23 +20,26 @@
     const MODE_SWAP  = 'swap';
     const MODE_CLEAR = 'clear';
     const MODE_DOUBLE = 'double';
+    const MODE_UNDO  = 'undo';
 
     let currentMode = MODE_NONE;
     const modeState = {
         smash:  { count: 0, accum: 1 },
         swap:   { count: 0, accum: 1, firstTile: null },
         clear:  { count: 0, accum: 1 },
-        double: { count: 0, accum: 1 }
+        double: { count: 0, accum: 1 },
+        undo:   { count: 0, accum: 1 }
     };
 
     const curState = () => currentMode ? modeState[currentMode] : null;
 
     // Mode config mapping
     const modeConfig = {
-        smash:  { modeKey: 'smashMode',  multKey: 'smashMultiplier', incKey: 'smashIncrement', limitKey: 'smashLimit' },
+        smash:  { modeKey: 'smashMode',  multKey: 'smashMultiplier',  incKey: 'smashIncrement',  limitKey: 'smashLimit' },
         swap:   { modeKey: 'swapMode',   multKey: 'swapMultiplier',   incKey: 'swapIncrement',   limitKey: 'swapLimit' },
         clear:  { modeKey: 'clearMode',  multKey: 'clearMultiplier',  incKey: 'clearIncrement',  limitKey: 'clearLimit' },
-        double: { modeKey: 'doubleMode', multKey: 'doubleMultiplier', incKey: 'doubleIncrement', limitKey: 'doubleLimit' }
+        double: { modeKey: 'doubleMode', multKey: 'doubleMultiplier', incKey: 'doubleIncrement', limitKey: 'doubleLimit' },
+        undo:   { modeKey: 'undoMode',   multKey: 'undoMultiplier',   incKey: 'undoIncrement',   limitKey: 'undoLimit' }
     };
 
     // Hint messages for each ability (mode-agnostic base, mode details appended dynamically)
@@ -44,7 +47,8 @@
         smash:  '🔨 敲击消除：点击棋盘上任意方块将其直接消除。',
         swap:   '🔄 交换位置：依次点击两个方块，交换它们的位置。',
         clear:  '🗑️ 清除小数字：确认后将清除棋盘上所有值为2和4的方块。',
-        double: '✖️ 翻倍：点击棋盘上一个方块，将其分值翻倍。'
+        double: '✖️ 翻倍：点击棋盘上一个方块，将其分值翻倍。',
+        undo:   '↩️ 撤回：回退到上一步操作前的状态。'
     };
 
     // ===== AUDIO =====
@@ -153,17 +157,21 @@
 
     // ===== UNDO =====
     byId('btn-undo').onclick = () => {
-        if (!game || gameOver || !game.undoState) return;
+        if (!game || gameOver) return;
+        if (!game.undoState) return;
+        if (!canUse(MODE_UNDO)) return;
+
+        const cost = getCost(MODE_UNDO, 0, 0);
+        if (getModeSetting(MODE_UNDO, 'modeKey') === 'cost' && cost > game.score) {
+            playTone(150, 0.2, 'sawtooth', 0.15);
+            return;
+        }
+
         game.undo();
+        applyCost(MODE_UNDO, cost);
         syncBoard();
         updateScore();
-        updateUndoButton();
         updateAbilityButtons();
-    };
-
-    const updateUndoButton = () => {
-        const btn = byId('btn-undo');
-        if (btn) btn.disabled = !game || !game.undoState;
     };
 
     // ===== HINT SYSTEM =====
@@ -177,7 +185,7 @@
             const multiplier = getModeSetting(mode, 'multKey');
             const accum = modeState[mode].accum;
             const minCost = estimateMinCost(mode);
-            extra = `  [当前倍率${multiplier}倍，累积${(accum).toFixed(2)}x，本次最低约扣${minCost}分]`;
+            extra = `  [当前倍率${multiplier}倍，累积${(accum).toFixed(2)}x，本次扣${minCost}分]`;
         } else if (modeKey === 'limit') {
             const limit = getModeSetting(mode, 'limitKey');
             const count = modeState[mode].count;
@@ -271,38 +279,29 @@
 
     /**
      * getCost — 计算扣分金额
-     * 公式: floor(目标值 × 基础倍率 × 累计倍率)
-     * 目标值因功能而异: smash/double=方块值, swap=两方块值之和, clear=被清除总值
+     * 公式: floor(当前场上最大方块值 × 基础倍率 × 累计倍率)
+     * （统一按场上最大方块为基础，避免小数字方块几乎无代价的问题）
      */
     const getCost = (mode, value, boardSum) => {
         const m = getModeSetting(mode, 'modeKey');
         if (m !== 'cost') return 0;
         const multiplier = getModeSetting(mode, 'multKey');
         const ms = modeState[mode];
-        switch (mode) {
-            case MODE_SMASH:  return Math.floor(value * multiplier * ms.accum);
-            case MODE_SWAP:   return Math.floor(value * multiplier * ms.accum);
-            case MODE_CLEAR:  return Math.floor(value * multiplier * ms.accum);
-            case MODE_DOUBLE: return Math.floor(value * multiplier * ms.accum);
-            default: return 0;
-        }
+        const maxTile = game ? game.getMaxTileValue() : 0;
+        return Math.floor(maxTile * multiplier * ms.accum);
     };
 
     /**
-     * estimateMinCost — 预估使用某功能的最低代价（用于按钮禁用判断）
+     * estimateMinCost — 计算使用某功能的代价（用于按钮禁用判断和提示）
+     * 扣分公式现在与目标方块无关，因此直接返回当前精确扣分值
      */
     const estimateMinCost = (mode) => {
         const m = getModeSetting(mode, 'modeKey');
         if (m !== 'cost') return 0;
         const multiplier = getModeSetting(mode, 'multKey');
         const ms = modeState[mode];
-        switch (mode) {
-            case MODE_SMASH:  return Math.floor(2 * multiplier * ms.accum);       // 最小方块值2
-            case MODE_SWAP:   return Math.floor(4 * multiplier * ms.accum);      // 最少两个2之和=4
-            case MODE_CLEAR:  return Math.floor(6 * multiplier * ms.accum);       // 至少一个2+一个4
-            case MODE_DOUBLE: return Math.floor(2 * multiplier * ms.accum);       // 最小方块值2
-            default: return 0;
-        }
+        const maxTile = game ? game.getMaxTileValue() : 0;
+        return Math.floor(maxTile * multiplier * ms.accum);
     };
 
     const applyCost = (mode, cost) => {
@@ -335,7 +334,7 @@
      */
     const updateAbilityButtons = () => {
         if (!game) return;
-        ['smash', 'swap', 'clear', 'double'].forEach(mode => {
+        ['smash', 'swap', 'clear', 'double', 'undo'].forEach(mode => {
             const btn = byId(`btn-${mode}`);
             if (!btn) return;
             // 如果游戏已结束，禁用所有
@@ -354,6 +353,11 @@
             if (mode === 'clear') {
                 if (allTilesAreTwoOrFour()) btn.disabled = true;
                 else if (!hasClearableTiles()) btn.disabled = true;
+            }
+
+            // ===== 撤销按钮专用：没有可回退的状态直接禁用 =====
+            if (mode === 'undo' && !game.undoState) {
+                btn.disabled = true;
             }
 
             // ===== 棋盘资格检查（其他能力）=====
@@ -640,7 +644,6 @@
             game.swapTiles(t1.r, t1.c, r, c);
             syncBoard();
             updateScore();
-            updateUndoButton();
             updateAbilityButtons();
 
             exitMode();
@@ -698,7 +701,6 @@
         // ⑤ 恢复显示
         tl.style.display = '';
         updateScore();
-        updateUndoButton();
         updateAbilityButtons();
         checkGameOverAfterAction();
 
@@ -732,13 +734,12 @@
 
         if (result.el) {
             result.el.textContent = result.newValue;
-            result.el.className = `tile tile-${result.newValue > 2048 ? 'super' : result.newValue}`;
+            result.el.className = `tile tile-${result.newValue > 65536 ? 'super' : result.newValue}`;
             result.el.classList.add('tile-double-pop');
             setTimeout(() => result.el?.classList.remove('tile-double-pop'), 300);
         }
 
         updateScore();
-        updateUndoButton();
         updateAbilityButtons();
 
         exitMode();
@@ -809,11 +810,11 @@
         modeState.swap   = { count: 0, accum: 1, firstTile: null };
         modeState.clear  = { count: 0, accum: 1 };
         modeState.double = { count: 0, accum: 1 };
+        modeState.undo   = { count: 0, accum: 1 };
 
         resetTimer();
         updateScore();
         updateModeUI();
-        updateUndoButton();
         hideHint();
         hideBackToast();
 
@@ -866,7 +867,7 @@
 
     const createTileElement = (tile) => {
         const el = document.createElement('div');
-        el.className = `tile tile-${tile.value > 2048 ? 'super' : tile.value}`;
+        el.className = `tile tile-${tile.value > 65536 ? 'super' : tile.value}`;
         if (tile.isNew) el.classList.add('tile-new');
         if (tile.mergedFrom) el.classList.add('tile-merged');
         
@@ -946,7 +947,6 @@
         if (r.scoreGained > 0) playTone(420, 0.14, 'square', 0.22);
 
         updateScore();
-        updateUndoButton();
         updateAbilityButtons(); // ← 移动后也要刷新按钮状态
         renderMove();
 
@@ -1084,7 +1084,7 @@
     }
 
     // Setup handlers for all abilities
-    ['smash','swap','clear','double'].forEach(setupAbilityHandlers);
+    ['smash','swap','clear','double','undo'].forEach(setupAbilityHandlers);
 
     const renderSettings = () => {
         byId('volume-slider').value = settings.volume;
@@ -1104,7 +1104,7 @@
         });
 
         // Render each ability's mode settings
-        ['smash','swap','clear','double'].forEach(ability => {
+        ['smash','swap','clear','double','undo'].forEach(ability => {
             const modeVal = settings[`${ability}Mode`];
             
             // 更新模式按钮active态

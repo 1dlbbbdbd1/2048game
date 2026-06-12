@@ -317,7 +317,8 @@ body {
 .game-topbar {
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: space-between;
+    gap: 8px;
     width: 100%;
     max-width: 500px;
 }
@@ -748,7 +749,12 @@ body {
 .tile-512  { background: #edc850; color: #f9f6f2; font-size: 0.85em; }
 .tile-1024 { background: #edc53f; color: #f9f6f2; font-size: 0.75em; }
 .tile-2048 { background: #edc22e; color: #f9f6f2; font-size: 0.75em; }
-.tile-super { background: #3c3a32; color: #f9f6f2; font-size: 0.7em; }
+.tile-4096 { background: #5c4033; color: #f9f6f2; font-size: 0.7em; }
+.tile-8192 { background: #4b0082; color: #f9f6f2; font-size: 0.7em; }
+.tile-16384 { background: #1e3a5f; color: #f9f6f2; font-size: 0.65em; }
+.tile-32768 { background: #2d5a3d; color: #f9f6f2; font-size: 0.65em; }
+.tile-65536 { background: #8b2500; color: #f9f6f2; font-size: 0.65em; }
+.tile-super { background: #2a2a2a; color: #f9f6f2; font-size: 0.6em; }
 
 /* ===== 响应式 ===== */
 @media (max-width: 480px) {

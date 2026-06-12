@@ -1,4 +1,4 @@
-// 2048 v1.3.4 稳定版
+// 2048 v1.3.5 稳定版 - 优化游戏扣分模式平衡性设定
 const Storage = (() => {
     const SETTINGS_KEY = 'tcs_settings';
     const LEADERBOARD_KEY = 'tcs_leaderboard';
@@ -11,24 +11,29 @@ const Storage = (() => {
         askSize: true,
         // 敲击模式
         smashMode: 'limit',
-        smashMultiplier: 10,
-        smashIncrement: 5,
+        smashMultiplier: 5,
+        smashIncrement: 50,
         smashLimit: 3,
         // 交换模式
         swapMode: 'limit',
-        swapMultiplier: 10,
-        swapIncrement: 5,
+        swapMultiplier: 5,
+        swapIncrement: 50,
         swapLimit: 3,
         // 清除模式
         clearMode: 'limit',
-        clearMultiplier: 10,
-        clearIncrement: 10,
+        clearMultiplier: 5,
+        clearIncrement: 50,
         clearLimit: 3,
         // 翻倍模式
         doubleMode: 'limit',
-        doubleMultiplier: 10,
-        doubleIncrement: 8,
-        doubleLimit: 3
+        doubleMultiplier: 5,
+        doubleIncrement: 50,
+        doubleLimit: 3,
+        // 撤销模式
+        undoMode: 'limit',
+        undoMultiplier: 5,
+        undoIncrement: 50,
+        undoLimit: 3
     };
 
     function getSettings() {

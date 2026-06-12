@@ -246,4 +246,15 @@ class Game {
         }
         return sum;
     }
+
+    getMaxTileValue() {
+        let max = 0;
+        for (let r = 0; r < this.size; r++) {
+            for (let c = 0; c < this.size; c++) {
+                const t = this.grid[r][c];
+                if (t && t.value > max) max = t.value;
+            }
+        }
+        return max;
+    }
 }

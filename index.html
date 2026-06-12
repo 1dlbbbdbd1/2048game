@@ -113,6 +113,7 @@
                             <polyline points="1 4 1 10 7 10"/>
                             <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
                         </svg>
+                        <span class="btn-badge"></span>
                     </button>
                     <span class="action-label">撤回</span>
                 </div>
@@ -225,13 +226,39 @@
                     <label class="setting-label">特殊功能设置</label>
                     <!-- 功能选项卡 -->
                     <div class="ability-tabs" id="ability-tabs">
-                        <button class="ability-tab active" data-ability="smash">敲击</button>
+                        <button class="ability-tab active" data-ability="undo">撤销</button>
+                        <button class="ability-tab" data-ability="smash">敲击</button>
                         <button class="ability-tab" data-ability="swap">交换</button>
                         <button class="ability-tab" data-ability="clear">清除</button>
                         <button class="ability-tab" data-ability="double">翻倍</button>
                     </div>
+                    <!-- 撤销面板 -->
+                    <div class="ability-panel active" id="panel-undo">
+                        <div class="mode-picker undo-mode-picker" id="undo-mode-picker">
+                            <button class="mode-btn undo-mode-btn active" data-mode="free">无代价</button>
+                            <button class="mode-btn undo-mode-btn" data-mode="cost">扣分模式</button>
+                            <button class="mode-btn undo-mode-btn" data-mode="limit">限制次数</button>
+                        </div>
+                        <div class="mode-settings undo-settings" id="undo-settings">
+                            <div class="mode-row undo-setting-row" id="undo-row-multiplier">
+                                <span class="mode-label undo-setting-label">基础倍率</span>
+                                <input type="number" id="undo-multiplier" min="1" max="200" value="5">
+                                <span class="mode-unit undo-setting-unit">x</span>
+                            </div>
+                            <div class="mode-row undo-setting-row" id="undo-row-increment">
+                                <span class="mode-label undo-setting-label">递增幅度</span>
+                                <input type="number" id="undo-increment" min="0" max="100" value="50">
+                                <span class="mode-unit undo-setting-unit">%</span>
+                            </div>
+                            <div class="mode-row undo-setting-row" id="undo-row-limit">
+                                <span class="mode-label undo-setting-label">使用次数</span>
+                                <input type="number" id="undo-limit" min="1" max="20" value="3">
+                                <span class="mode-unit undo-setting-unit">次</span>
+                            </div>
+                        </div>
+                    </div>
                     <!-- 敲击面板 -->
-                    <div class="ability-panel active" id="panel-smash">
+                    <div class="ability-panel" id="panel-smash">
                         <div class="mode-picker smash-mode-picker" id="smash-mode-picker">
                             <button class="mode-btn smash-mode-btn active" data-mode="free">无代价</button>
                             <button class="mode-btn smash-mode-btn" data-mode="cost">扣分模式</button>
@@ -240,12 +267,12 @@
                         <div class="mode-settings smash-settings" id="smash-settings">
                             <div class="mode-row smash-setting-row" id="smash-row-multiplier">
                                 <span class="mode-label smash-setting-label">基础倍率</span>
-                                <input type="number" id="smash-multiplier" min="1" max="200" value="50">
+                                <input type="number" id="smash-multiplier" min="1" max="200" value="5">
                                 <span class="mode-unit smash-setting-unit">x</span>
                             </div>
                             <div class="mode-row smash-setting-row" id="smash-row-increment">
                                 <span class="mode-label smash-setting-label">递增幅度</span>
-                                <input type="number" id="smash-increment" min="0" max="50" value="5">
+                                <input type="number" id="smash-increment" min="0" max="100" value="50">
                                 <span class="mode-unit smash-setting-unit">%</span>
                             </div>
                             <div class="mode-row smash-setting-row" id="smash-row-limit">
@@ -265,12 +292,12 @@
                         <div class="mode-settings swap-settings" id="swap-settings">
                             <div class="mode-row swap-setting-row" id="swap-row-multiplier">
                                 <span class="mode-label swap-setting-label">基础倍率</span>
-                                <input type="number" id="swap-multiplier" min="1" max="200" value="30">
+                                <input type="number" id="swap-multiplier" min="1" max="200" value="5">
                                 <span class="mode-unit swap-setting-unit">x</span>
                             </div>
                             <div class="mode-row swap-setting-row" id="swap-row-increment">
                                 <span class="mode-label swap-setting-label">递增幅度</span>
-                                <input type="number" id="swap-increment" min="0" max="50" value="5">
+                                <input type="number" id="swap-increment" min="0" max="100" value="50">
                                 <span class="mode-unit swap-setting-unit">%</span>
                             </div>
                             <div class="mode-row swap-setting-row" id="swap-row-limit">
@@ -290,12 +317,12 @@
                         <div class="mode-settings clear-settings" id="clear-settings">
                             <div class="mode-row clear-setting-row" id="clear-row-multiplier">
                                 <span class="mode-label clear-setting-label">基础倍率</span>
-                                <input type="number" id="clear-multiplier" min="1" max="200" value="80">
+                                <input type="number" id="clear-multiplier" min="1" max="200" value="5">
                                 <span class="mode-unit clear-setting-unit">x</span>
                             </div>
                             <div class="mode-row clear-setting-row" id="clear-row-increment">
                                 <span class="mode-label clear-setting-label">递增幅度</span>
-                                <input type="number" id="clear-increment" min="0" max="50" value="10">
+                                <input type="number" id="clear-increment" min="0" max="100" value="50">
                                 <span class="mode-unit clear-setting-unit">%</span>
                             </div>
                             <div class="mode-row clear-setting-row" id="clear-row-limit">
@@ -315,12 +342,12 @@
                         <div class="mode-settings double-settings" id="double-settings">
                             <div class="mode-row double-setting-row" id="double-row-multiplier">
                                 <span class="mode-label double-setting-label">基础倍率</span>
-                                <input type="number" id="double-multiplier" min="1" max="200" value="60">
+                                <input type="number" id="double-multiplier" min="1" max="200" value="5">
                                 <span class="mode-unit double-setting-unit">x</span>
                             </div>
                             <div class="mode-row double-setting-row" id="double-row-increment">
                                 <span class="mode-label double-setting-label">递增幅度</span>
-                                <input type="number" id="double-increment" min="0" max="50" value="8">
+                                <input type="number" id="double-increment" min="0" max="100" value="50">
                                 <span class="mode-unit double-setting-unit">%</span>
                             </div>
                             <div class="mode-row double-setting-row" id="double-row-limit">
