@@ -192,11 +192,40 @@ npm install
 # 开发模式运行
 npm start
 
-# 打包为 exe
-npm run build
+# 打包为 exe（国内网络使用 build:cn）
+npm run build:cn
 ```
 
 打包完成后，exe 文件在 `dist/` 目录下。
+
+> 💡 `build:cn` 使用国内 npmmirror 镜像下载 Electron 二进制文件，避免超时。如果网络正常也可使用 `npm run build`。
+
+### 方式四：Capacitor 打包（Android 移动端）
+
+**前置条件**：安装 [Android Studio](https://developer.android.google.cn/studio)
+
+```bash
+# 1. 安装依赖
+npm install
+
+# 2. 复制网页文件到 www/
+npm run cap:copy
+
+# 3. 生成 Android 项目（仅首次）
+npx cap add android
+
+# 4. 生成各尺寸图标
+node generate-icon.js
+
+# 5. 同步到 Android 项目
+npm run cap:sync
+
+# 6. 用 Android Studio 打开并构建 APK
+npx cap open android
+# 在 Android Studio 中: Build → Build Bundle(s)/APK(s) → Build APK(s)
+```
+
+生成的 APK 在 `android/app/build/outputs/apk/debug/` 目录下。
 
 ---
 
