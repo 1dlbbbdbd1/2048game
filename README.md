@@ -241,8 +241,10 @@ npm run build
 ### v2.0.0 — 多平台支持
 - 🖥️ **Windows exe 离线版**：基于 Electron 打包，双击即可运行，无需安装和联网
 - 📦 **项目结构升级**：新增 `main.js`（Electron 主进程）、`package.json`（打包配置）、`capacitor.config.json`（Android 配置）
-- 🔜 **Android apk 计划中**：基于 Capacitor，正在开发
-- 🎮 **全平台功能一致**：Web / exe 体验完全相同，数据本地持久化
+- 🎮 **全平台功能一致**：Web / exe / apk 体验完全相同，数据本地持久化
+
+<details>
+<summary>📋 查看更早版本 (v1.3.0 ~ v1.3.8)</summary>
 
 ### v1.3.8 — 全屏适配与滚动优化
 - 🖥️ **禁止页面滚动**：全局禁止浏览器滚动条，消除与游戏滑动操作的冲突和误触
@@ -317,6 +319,8 @@ npm run build
 ### v1.0.0 — 初始版本
 - 完整 2048 核心玩法（5 种棋盘大小）
 - 撤销、计时器、排行榜、多主题
+
+</details>
 
 ---
 
