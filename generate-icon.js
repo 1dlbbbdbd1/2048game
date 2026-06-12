@@ -1,16 +1,30 @@
-// 一次性脚本：将 icon.svg 转换为 icon.png (1024x1024)
+// 一次性脚本：生成Android各尺寸图标
 const sharp = require('sharp');
-const fs = require('fs');
 const path = require('path');
 
-const svgPath = path.join(__dirname, 'icons', 'icon.svg');
-const pngPath = path.join(__dirname, 'icons', 'icon.png');
+const src = path.join(__dirname, 'icons', 'icon.png');
+const resDir = path.join(__dirname, 'android', 'app', 'src', 'main', 'res');
 
-const svgBuffer = fs.readFileSync(svgPath);
+const sizes = {
+    'mipmap-mdpi': 48,
+    'mipmap-hdpi': 72,
+    'mipmap-xhdpi': 96,
+    'mipmap-xxhdpi': 144,
+    'mipmap-xxxhdpi': 192
+};
 
-sharp(svgBuffer)
-    .resize(1024, 1024)
-    .png()
-    .toFile(pngPath)
-    .then(() => console.log('图标生成成功:', pngPath))
-    .catch(err => console.error('生成失败:', err));
+async function generate() {
+    for (const [dir, size] of Object.entries(sizes)) {
+        const outDir = path.join(resDir, dir);
+        for (const name of ['ic_launcher.png', 'ic_launcher_round.png', 'ic_launcher_foreground.png']) {
+            await sharp(src)
+                .resize(size, size)
+                .png()
+                .toFile(path.join(outDir, name));
+            console.log(`${dir}/${name} (${size}x${size})`);
+        }
+    }
+    console.log('Android图标全部生成完成！');
+}
+
+generate().catch(err => console.error('生成失败:', err));

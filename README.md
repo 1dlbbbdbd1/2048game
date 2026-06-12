@@ -10,7 +10,7 @@
 |------|------|---------|
 | **Web 浏览器** | ✅ 已支持 | 在线访问或本地打开 `index.html` |
 | **Windows (exe)** | ✅ 已支持 | 下载 exe 离线运行，无需安装 |
-| **Android (apk)** | 🔜 开发中 | 敬请期待 |
+| **Android (apk)** | ✅ 已支持 | 下载 apk 安装到手机，支持触摸和键盘 |
 
 ### Windows exe 使用方法
 
@@ -20,6 +20,16 @@
 4. 游戏数据保存在本地，关闭后进度不会丢失
 
 > 💡 exe 版本基于 Electron 打包，功能与网页版完全一致。如果 Windows 提示"无法识别的应用"，点击"更多信息" → "仍要运行"即可。
+
+### Android apk 使用方法
+
+1. 前往 [GitHub Releases](https://github.com/1dlbbbdbd1/2048game/releases) 页面
+2. 找到对应版本，下载 `app-debug.apk` 文件
+3. 传输到 Android 手机，点击安装
+4. 安装后桌面出现 2048 图标，点击即可开始游戏
+5. 支持触摸滑动操作，连接键盘后可用方向键/WASD 控制
+
+> 💡 apk 基于 Capacitor 打包，使用系统 WebView 运行，体积仅约 4MB。首次安装可能需要允许"安装未知来源应用"。
 
 ---
 
@@ -149,7 +159,7 @@
 | **LocalStorage** | 设置、排行榜、最高分、游戏存档本地持久化 |
 | **Web Audio API** | 运行时合成音效（无需音频文件） |
 | **Electron** | Windows exe 桌面端打包 |
-| **Capacitor** | Android apk 移动端打包（开发中） |
+| **Capacitor** | Android apk 移动端打包 |
 
 ---
 
@@ -221,6 +231,12 @@ npm run build
 ---
 
 ## 📜 版本历史
+
+### v2.0.1 — Android apk 发布
+- 📱 **Android apk 版本**：基于 Capacitor 打包，支持触摸滑动和外接键盘操作
+- 🎨 **自定义应用图标**：替换默认 Android 图标为 2048 游戏图标
+- ⬅️ **Android 返回键支持**：游戏中按返回键弹出退出确认对话框，设置/排行榜页按返回键返回菜单
+- 📦 **apk 体积仅约 4MB**：使用系统 WebView，无需打包浏览器
 
 ### v2.0.0 — 多平台支持
 - 🖥️ **Windows exe 离线版**：基于 Electron 打包，双击即可运行，无需安装和联网
