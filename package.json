@@ -1,0 +1,52 @@
+{
+  "name": "game2048",
+  "version": "2.0.0",
+  "description": "一个 2048 数字合并游戏，支持 Web 浏览器、Windows exe 离线版，5 种特殊能力和游戏存档。",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:cn": "$env:ELECTRON_MIRROR='https://npmmirror.com/mirrors/electron/'; electron-builder",
+    "cap:copy": "powershell -Command \"Remove-Item -Recurse -Force www -ErrorAction SilentlyContinue; New-Item -ItemType Directory -Path www | Out-Null; Copy-Item -Path index.html,css,js,icons -Destination www -Recurse -Force\"",
+    "cap:sync": "npm run cap:copy && npx cap sync android",
+    "cap:open": "npx cap open android"
+  },
+  "build": {
+    "appId": "com.hezh.game2048",
+    "productName": "2048",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!dist",
+      "!android",
+      "!node_modules/.cache"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "icons/icon.png"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/1dlbbbdbd1/2048game.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/1dlbbbdbd1/2048game/issues"
+  },
+  "homepage": "https://github.com/1dlbbbdbd1/2048game#readme",
+  "devDependencies": {
+    "electron": "^42.4.0",
+    "electron-builder": "^26.15.2",
+    "sharp": "^0.35.1"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/cli": "^8.4.0",
+    "@capacitor/core": "^8.4.0"
+  }
+}

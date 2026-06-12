@@ -1,0 +1,11 @@
+{
+  "appId": "com.hezh.game2048",
+  "appName": "2048",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#bbada0"
+  }
+}
