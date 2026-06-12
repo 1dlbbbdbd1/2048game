@@ -340,6 +340,7 @@
         syncBoard();
         updateScore();
         updateAbilityButtons();
+        saveCurrentGame();
     };
 
     // ===== HINT SYSTEM =====
@@ -479,7 +480,10 @@
             gameOver = true;
             stopTimer();
             saveScore();
+            Storage.clearSavedGame();
             showOverlay('lose');
+        } else {
+            saveCurrentGame();
         }
     };
 
@@ -947,6 +951,7 @@
         hasWon = false;
         currentMode = MODE_NONE;
         resetModeState();
+        Storage.clearSavedGame();
 
         resetTimer();
         updateScore();
@@ -1091,12 +1096,16 @@
             gameOver = true;
             stopTimer();
             saveScore();
+            Storage.clearSavedGame();
             showOverlay('win');
         } else if (!game.canMove()) {
             gameOver = true;
             stopTimer();
             saveScore();
+            Storage.clearSavedGame();
             showOverlay('lose');
+        } else {
+            saveCurrentGame();
         }
     };
 
