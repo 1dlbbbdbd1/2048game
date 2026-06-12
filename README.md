@@ -24,7 +24,7 @@
 ### Android apk 使用方法
 
 1. 前往 [GitHub Releases](https://github.com/1dlbbbdbd1/2048game/releases) 页面
-2. 找到对应版本，下载 `app-debug.apk` 文件
+2. 找到对应版本，下载 `2048.apk` 文件
 3. 传输到 Android 手机，点击安装
 4. 安装后桌面出现 2048 图标，点击即可开始游戏
 5. 支持触摸滑动操作，连接键盘后可用方向键/WASD 控制
