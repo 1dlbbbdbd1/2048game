@@ -13,7 +13,6 @@
     let timerInterval = null;
     let seconds = 0;
     let muted = false;
-    let savedGameSize = null;
 
     // ===== UNIFIED MODE SYSTEM =====
     const MODE_NONE  = null;
@@ -31,8 +30,6 @@
         double: { count: 0, accum: 1 },
         undo:   { count: 0, accum: 1 }
     };
-
-    const curState = () => currentMode ? modeState[currentMode] : null;
 
     // Mode config mapping
     const modeConfig = {
@@ -149,21 +146,36 @@
         if (backToastTimer) { clearTimeout(backToastTimer); backToastTimer = null; }
     };
 
+    // 返回菜单的统一清理逻辑
+    const returnToMenu = () => {
+        stopTimer();
+        exitMode();
+        hideHint();
+        byId('modal-size').classList.add('hidden');
+        byId('overlay').classList.add('hidden');
+        checkSavedGame();
+        showPage('menu');
+    };
+
+    // 重置道具使用状态
+    const resetModeState = () => {
+        modeState.smash  = { count: 0, accum: 1 };
+        modeState.swap   = { count: 0, accum: 1, firstTile: null };
+        modeState.clear  = { count: 0, accum: 1 };
+        modeState.double = { count: 0, accum: 1 };
+        modeState.undo   = { count: 0, accum: 1 };
+    };
+
     const showExitConfirm = () => {
         if (!game || gameOver) {
-            stopTimer();
-            exitMode();
-            hideHint();
-            byId('modal-size').classList.add('hidden');
-            checkSavedGame();
-            showPage('menu');
+            returnToMenu();
             return;
         }
 
-        const overlay = byId('overlay');
-        const title = byId('overlay-title');
-        const msg = byId('overlay-msg');
-        const btns = byId('overlay-buttons');
+        const modal = byId('modal-confirm');
+        const title = byId('modal-confirm-title');
+        const msg = byId('modal-confirm-msg');
+        const btns = byId('modal-confirm-buttons');
 
         title.textContent = '退出游戏';
         msg.textContent = `当前分数：${game.score}，选择退出方式：`;
@@ -172,33 +184,23 @@
             <button class="btn btn-secondary" id="exit-settle">结算退出</button>
             <button class="btn btn-secondary" id="exit-cancel">取消</button>
         `;
-        overlay.classList.remove('hidden');
+        modal.classList.remove('hidden');
 
         byId('exit-save').onclick = () => {
-            overlay.classList.add('hidden');
+            modal.classList.add('hidden');
             saveCurrentGame();
-            stopTimer();
-            exitMode();
-            hideHint();
-            byId('modal-size').classList.add('hidden');
-            checkSavedGame();
-            showPage('menu');
+            returnToMenu();
         };
 
         byId('exit-settle').onclick = () => {
-            overlay.classList.add('hidden');
-            stopTimer();
+            modal.classList.add('hidden');
             saveScore();
             Storage.clearSavedGame();
-            exitMode();
-            hideHint();
-            byId('modal-size').classList.add('hidden');
-            checkSavedGame();
-            showPage('menu');
+            returnToMenu();
         };
 
         byId('exit-cancel').onclick = () => {
-            overlay.classList.add('hidden');
+            modal.classList.add('hidden');
         };
     };
 
@@ -213,13 +215,6 @@
             modeState: JSON.parse(JSON.stringify(modeState))
         };
         Storage.saveGame(gameState);
-        savedGameSize = game.size;
-    };
-
-    const loadSavedGame = () => {
-        const saved = Storage.getSavedGame();
-        if (!saved) return null;
-        return saved;
     };
 
     const showNewGameConfirm = (savedScore) => {
@@ -271,8 +266,8 @@
         });
     };
 
-    const formatTime = (seconds) => {
-        const m = Math.floor(seconds / 60), s = seconds % 60;
+    const formatTime = (secs) => {
+        const m = Math.floor(secs / 60), s = secs % 60;
         return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
     };
 
@@ -318,10 +313,8 @@
         const continueBtn = byId('btn-continue-game');
         if (saved) {
             continueBtn.style.display = 'block';
-            savedGameSize = saved.size;
         } else {
             continueBtn.style.display = 'none';
-            savedGameSize = null;
         }
     };
 
@@ -336,7 +329,7 @@
         if (!game.undoState) return;
         if (!canUse(MODE_UNDO)) return;
 
-        const cost = getCost(MODE_UNDO, 0, 0);
+        const cost = getCost(MODE_UNDO);
         if (getModeSetting(MODE_UNDO, 'modeKey') === 'cost' && cost > game.score) {
             playTone(150, 0.2, 'sawtooth', 0.15);
             return;
@@ -359,7 +352,7 @@
         if (modeKey === 'cost') {
             const multiplier = getModeSetting(mode, 'multKey');
             const accum = modeState[mode].accum;
-            const minCost = estimateMinCost(mode);
+            const minCost = getCost(mode);
             extra = `  [当前倍率${multiplier}倍，累积${(accum).toFixed(2)}x，本次扣${minCost}分]`;
         } else if (modeKey === 'limit') {
             const limit = getModeSetting(mode, 'limitKey');
@@ -455,22 +448,9 @@
     /**
      * getCost — 计算扣分金额
      * 公式: floor(当前场上最大方块值 × 基础倍率 × 累计倍率)
-     * （统一按场上最大方块为基础，避免小数字方块几乎无代价的问题）
+     * 非扣分模式返回 0
      */
-    const getCost = (mode, value, boardSum) => {
-        const m = getModeSetting(mode, 'modeKey');
-        if (m !== 'cost') return 0;
-        const multiplier = getModeSetting(mode, 'multKey');
-        const ms = modeState[mode];
-        const maxTile = game ? game.getMaxTileValue() : 0;
-        return Math.floor(maxTile * multiplier * ms.accum);
-    };
-
-    /**
-     * estimateMinCost — 计算使用某功能的代价（用于按钮禁用判断和提示）
-     * 扣分公式现在与目标方块无关，因此直接返回当前精确扣分值
-     */
-    const estimateMinCost = (mode) => {
+    const getCost = (mode) => {
         const m = getModeSetting(mode, 'modeKey');
         if (m !== 'cost') return 0;
         const multiplier = getModeSetting(mode, 'multKey');
@@ -550,7 +530,7 @@
                 } else if (m === 'limit') {
                     btn.disabled = modeState[mode].count >= getModeSetting(mode, 'limitKey');
                 } else if (m === 'cost') {
-                    const minCost = estimateMinCost(mode);
+                    const minCost = getCost(mode);
                     btn.disabled = game.score < minCost;
                 }
             }
@@ -576,16 +556,6 @@
         } else {
             badge.classList.remove('show');
         }
-    };
-
-    /** 辅助：统计棋盘上有多少个方块 */
-    const countTiles = () => {
-        if (!game) return 0;
-        let c = 0;
-        for (let r = 0; r < game.size; r++)
-            for (let cc = 0; cc < game.size; cc++)
-                if (game.grid[r][cc]) c++;
-        return c;
     };
 
     /** 辅助：统计方块数量（交换模式需要至少2个）*/
@@ -689,7 +659,7 @@
             return;
         }
 
-        const cost = getCost(MODE_CLEAR, totalValue, 0);
+        const cost = getCost(MODE_CLEAR);
         const multiplier = getModeSetting(MODE_CLEAR, 'multKey');
         const accum = modeState[MODE_CLEAR].accum;
 
@@ -743,7 +713,7 @@
         const tile = game.grid[r][c];
         if (!tile || tile.value < 2) return;
 
-        const cost = getCost(MODE_SMASH, tile.value, 0);
+        const cost = getCost(MODE_SMASH);
         if (getModeSetting(MODE_SMASH, 'modeKey') === 'cost' && cost > game.score) {
             playTone(150, 0.2, 'sawtooth', 0.15); return;
         }
@@ -801,7 +771,7 @@
             if (!tile) return;
 
             const t1 = ms.firstTile;
-            const cost = getCost(MODE_SWAP, t1.value + tile.value, 0);
+            const cost = getCost(MODE_SWAP);
 
             if (getModeSetting(MODE_SWAP, 'modeKey') === 'cost' && cost > game.score) {
                 playTone(150, 0.2, 'sawtooth', 0.15);
@@ -848,7 +818,7 @@
         }
 
         const totalValue = removed.reduce((s, t) => s + t.value, 0);
-        const cost = getCost(MODE_CLEAR, totalValue, 0);
+        const cost = getCost(MODE_CLEAR);
 
         if (getModeSetting(MODE_CLEAR, 'modeKey') === 'cost' && cost > game.score) {
             playTone(150, 0.2, 'sawtooth', 0.15);
@@ -894,7 +864,7 @@
             playTone(150, 0.2, 'sawtooth', 0.15); return;
         }
 
-        const cost = getCost(MODE_DOUBLE, tile.value, 0);
+        const cost = getCost(MODE_DOUBLE);
         if (getModeSetting(MODE_DOUBLE, 'modeKey') === 'cost' && cost > game.score) {
             playTone(150, 0.2, 'sawtooth', 0.15); return;
         }
@@ -958,12 +928,7 @@
     const stopTimer = () => { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } };
     const resetTimer = () => { stopTimer(); seconds = 0; updateTimerDisplay(); };
     const updateTimerDisplay = () => {
-        const m = Math.floor(seconds / 60), s = seconds % 60;
-        byId('timer').textContent = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-    };
-    const getTimeString = () => {
-        const m = Math.floor(seconds / 60), s = seconds % 60;
-        return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+        byId('timer').textContent = formatTime(seconds);
     };
 
     // ===== KEYBOARD =====
@@ -981,11 +946,7 @@
         gameOver = false;
         hasWon = false;
         currentMode = MODE_NONE;
-        modeState.smash  = { count: 0, accum: 1 };
-        modeState.swap   = { count: 0, accum: 1, firstTile: null };
-        modeState.clear  = { count: 0, accum: 1 };
-        modeState.double = { count: 0, accum: 1 };
-        modeState.undo   = { count: 0, accum: 1 };
+        resetModeState();
 
         resetTimer();
         updateScore();
@@ -1143,7 +1104,7 @@
         Storage.addScore({
             score: game.score,
             gridSize: game.size,
-            time: getTimeString(),
+            time: formatTime(seconds),
             date: new Date().toISOString()
         });
     };
@@ -1176,8 +1137,7 @@
             b.innerHTML = '<button class="btn btn-primary" id="ov-retry">再来一局</button><button class="btn btn-secondary" id="ov-back">返回菜单</button>';
             byId('ov-retry').onclick = () => { startGame(game.size); };
             byId('ov-back').onclick = () => {
-                checkSavedGame();
-                showPage('menu');
+                returnToMenu();
             };
         }
         o.classList.remove('hidden');

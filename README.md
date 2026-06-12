@@ -190,6 +190,7 @@ php -S localhost:8080
 - 🔄 **新游戏结算旧游戏**：有保存的游戏时点击「新游戏」，会弹出确认框，可选择结算旧游戏后开始新局、继续上一局、或取消
 - 🌐 **刷新页面恢复**：游戏状态保存在 LocalStorage，刷新网页后仍可通过「继续游戏」继续
 - 🖥️ **全局确认弹窗**：新增独立于游戏页面的全局弹窗组件，菜单页也能正常弹出确认对话框
+- 🧹 **代码架构优化**：删除死代码（`loadSavedGame`/`countTiles`/`curState`/`savedGameSize`），合并重复函数（`getCost`/`estimateMinCost`、`formatTime`/`getTimeString`），提取公共逻辑（`returnToMenu`/`resetModeState`），统一弹窗系统
 
 ### v1.3.5 — 游戏扣分模式平衡性优化
 - ⚖️ **扣分公式统一优化**：从"目标方块值"改为"场上最大方块值"×倍率×递增，避免小数字道具滥用，后期使用代价更合理
