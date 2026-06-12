@@ -6,9 +6,7 @@
     <meta name="theme-color" content="#bbada0">
     <meta name="description" content="经典数字合并游戏，支持多种棋盘大小">
     <title>2048</title>
-    <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="stylesheet" href="css/style.css?v=1.3.6">
 </head>
 <body>
@@ -413,14 +411,6 @@
     <script src="js/game.js?v=1.3.6"></script>
     <script src="js/storage.js?v=1.3.6"></script>
     <script src="js/app.js?v=1.3.6"></script>
-    <script>
-        // 注册 Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('SW registered:', reg.scope))
-                .catch(err => console.log('SW registration failed:', err));
-        }
-    </script>
 </body>
 </html>
 
