@@ -1384,6 +1384,16 @@
         move(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
     });
 
+    // ===== ANDROID BACK BUTTON =====
+    document.addEventListener('backbutton', () => {
+        if (byId('page-game').classList.contains('active')) {
+            showExitConfirm();
+        } else if (byId('page-settings').classList.contains('active') ||
+                   byId('page-leaderboard').classList.contains('active')) {
+            showPage('menu');
+        }
+    });
+
     // ===== INIT =====
     document.body.className = `theme-${settings.theme}`;
     byId('volume-slider').value = settings.volume;

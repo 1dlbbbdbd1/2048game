@@ -11,6 +11,12 @@ Thumbs.db
 *.tmp
 *.log
 
+# 依赖和构建产物
+node_modules/
+dist/
+android/
+www/
+
 # Trae 文档
 .trae/
 

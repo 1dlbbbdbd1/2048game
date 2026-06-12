@@ -37,8 +37,8 @@ class Game {
     }
 
     move(direction) {
-        // Save state for undo
-        this.undoState = this.getState();
+        // 在移动前保存状态（用于撤销）
+        const prevState = this.getState();
 
         const vector = this.getVector(direction);
         const traversals = this.buildTraversals(vector);
@@ -87,11 +87,11 @@ class Game {
         });
 
         if (moved) {
+            this.undoState = prevState; // 只有有效移动才保存撤销状态
             this.score += scoreGained;
             this.addRandomTile();
-        } else {
-            this.undoState = null; // Don't save undo if no move happened
         }
+        // 无效移动时保留旧的 undoState，不覆盖也不清空
 
         return { moved, scoreGained, won: this.won };
     }
