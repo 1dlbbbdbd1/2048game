@@ -972,8 +972,12 @@
 
     const buildBoard = () => {
         const sz = game.size;
-        const maxW = Math.min(window.innerWidth - 40, 500);
-        cellSize = Math.floor((maxW - 8 * (sz + 1)) / sz);
+        const bodyPad = window.innerWidth <= 480 ? 20 : 40;
+        const maxW = Math.min(window.innerWidth - bodyPad, 500);
+        // 可用高度 = 视口高度 - body padding - topbar(~56) - gaps(~64) - action-bar(~62) - hints(~40) - padding(10)
+        const maxH = window.innerHeight - bodyPad - 232;
+        const maxBoard = Math.max(Math.min(maxW, maxH), 200);
+        cellSize = Math.floor((maxBoard - 8 * (sz + 1)) / sz);
         if (cellSize > 80) cellSize = 80;
         const total = sz * cellSize + 8 * (sz + 1);
 
@@ -1401,4 +1405,27 @@
     byId('toggle-ask-size').checked = settings.askSize;
     checkSavedGame();
     showPage('menu');
+
+    // 窗口大小变化时重建棋盘
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (byId('page-game').classList.contains('active') && game) {
+                buildBoard();
+                // 重新定位所有方块
+                for (let r = 0; r < game.size; r++) {
+                    for (let c = 0; c < game.size; c++) {
+                        const tile = game.grid[r][c];
+                        if (tile && tile.el) {
+                            tile.el.style.width = `${cellSize}px`;
+                            tile.el.style.height = `${cellSize}px`;
+                            tile.el.style.fontSize = `${Math.max(14, Math.floor(cellSize * 0.4))}px`;
+                            updateTilePosition(tile.el, tile.r, tile.c);
+                        }
+                    }
+                }
+            }
+        }, 150);
+    });
 })();

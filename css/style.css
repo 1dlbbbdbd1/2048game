@@ -65,11 +65,17 @@ body.theme-forest {
     --modal-bg: #f5faf5;
 }
 
+html {
+    height: 100%;
+    overflow: hidden;
+}
+
 body {
     font-family: var(--font);
     background: var(--bg);
     color: var(--text);
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -86,10 +92,13 @@ body {
     display: none;
     width: 100%;
     max-width: 520px;
+    height: calc(100vh - 40px);
+    overflow: hidden;
 }
 
 .page.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
 }
 
 /* ===== 主菜单 ===== */
@@ -98,7 +107,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 80vh;
+    flex: 1;
     gap: 8px;
 }
 
@@ -326,6 +335,8 @@ body {
     align-items: center;
     gap: 16px;
     padding-top: 10px;
+    flex: 1;
+    min-height: 0;
 }
 
 .game-topbar {
@@ -376,6 +387,7 @@ body {
 .board-wrapper {
     position: relative;
     touch-action: none;
+    flex-shrink: 0;
 }
 
 .board-wrapper.smash-mode .board {
@@ -501,7 +513,13 @@ body {
 .overlay-buttons .btn { min-width: 100px; }
 
 /* ===== 设置页 ===== */
-.page-card { padding-top: 10px; }
+.page-card {
+    padding-top: 10px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
 
 .page-header {
     display: flex;
@@ -773,6 +791,7 @@ body {
 /* ===== 响应式 ===== */
 @media (max-width: 480px) {
     body { padding: 10px; }
+    .page { height: calc(100vh - 20px); }
     .game-title { font-size: 48px; }
     .game-topbar { gap: 6px; }
     .game-topbar .btn-icon {
