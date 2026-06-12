@@ -10,30 +10,32 @@ const Storage = (() => {
         theme: 'classic',
         askSize: true,
         // 敲击模式
-        smashMode: 'limit',
+        smashMode: 'cost',
         smashMultiplier: 5,
         smashIncrement: 50,
         smashLimit: 3,
         // 交换模式
-        swapMode: 'limit',
+        swapMode: 'cost',
         swapMultiplier: 5,
         swapIncrement: 50,
         swapLimit: 3,
         // 清除模式
-        clearMode: 'limit',
+        clearMode: 'cost',
         clearMultiplier: 5,
         clearIncrement: 50,
         clearLimit: 3,
         // 翻倍模式
-        doubleMode: 'limit',
+        doubleMode: 'cost',
         doubleMultiplier: 5,
         doubleIncrement: 50,
         doubleLimit: 3,
         // 撤销模式
-        undoMode: 'limit',
+        undoMode: 'cost',
         undoMultiplier: 5,
         undoIncrement: 50,
-        undoLimit: 3
+        undoLimit: 3,
+        // 配置版本号（用于版本迁移，确保新默认设置对所有用户生效）
+        version: 2
     };
 
     function getSettings() {
@@ -41,6 +43,25 @@ const Storage = (() => {
             const raw = localStorage.getItem(SETTINGS_KEY);
             if (raw) {
                 const parsed = JSON.parse(raw);
+                // 版本迁移：如果本地设置版本号小于新默认值的版本号，
+                // 则将道具相关字段重置为最新默认值，确保所有用户都能享受到平衡设置
+                // （保留用户已自定义的棋盘大小、音量、主题等基础设置）
+                const currentVersion = parsed.version || 1;
+                const targetVersion = defaultSettings.version || 1;
+                if (currentVersion < targetVersion) {
+                    const abilityKeys = [
+                        'smashMode', 'smashMultiplier', 'smashIncrement', 'smashLimit',
+                        'swapMode', 'swapMultiplier', 'swapIncrement', 'swapLimit',
+                        'clearMode', 'clearMultiplier', 'clearIncrement', 'clearLimit',
+                        'doubleMode', 'doubleMultiplier', 'doubleIncrement', 'doubleLimit',
+                        'undoMode', 'undoMultiplier', 'undoIncrement', 'undoLimit'
+                    ];
+                    abilityKeys.forEach(key => { delete parsed[key]; });
+                    parsed.version = targetVersion;
+                    try {
+                        localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...defaultSettings, ...parsed }));
+                    } catch (e) {}
+                }
                 return { ...defaultSettings, ...parsed };
             }
         } catch (e) {}

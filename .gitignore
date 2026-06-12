@@ -13,3 +13,6 @@ Thumbs.db
 
 # Trae 文档
 .trae/
+
+# Workbuddy 临时文件（另一个AI软件）
+.workbuddy/
