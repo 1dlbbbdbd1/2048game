@@ -1,8 +1,9 @@
-// 2048 v1.3.5 稳定版 - 优化游戏扣分模式平衡性设定
+// 2048 v1.3.6 稳定版 - 添加游戏保存/继续功能
 const Storage = (() => {
     const SETTINGS_KEY = 'tcs_settings';
     const LEADERBOARD_KEY = 'tcs_leaderboard';
     const BEST_SCORE_KEY = 'tcs_best_score';
+    const SAVED_GAME_KEY = 'tcs_saved_game';
 
     const defaultSettings = {
         gridSize: 4,
@@ -131,12 +132,37 @@ const Storage = (() => {
         } catch (e) {}
     }
 
+    function saveGame(gameState) {
+        try {
+            localStorage.setItem(SAVED_GAME_KEY, JSON.stringify(gameState));
+        } catch (e) {}
+    }
+
+    function getSavedGame() {
+        try {
+            const raw = localStorage.getItem(SAVED_GAME_KEY);
+            if (raw) {
+                return JSON.parse(raw);
+            }
+        } catch (e) {}
+        return null;
+    }
+
+    function clearSavedGame() {
+        try {
+            localStorage.removeItem(SAVED_GAME_KEY);
+        } catch (e) {}
+    }
+
     return {
         getSettings,
         saveSettings,
         getLeaderboard,
         addScore,
         getBestScore,
-        clearLeaderboard
+        clearLeaderboard,
+        saveGame,
+        getSavedGame,
+        clearSavedGame
     };
 })();

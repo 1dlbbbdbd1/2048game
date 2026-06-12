@@ -1,4 +1,4 @@
-// 2048 v1.3.4 稳定版
+// 2048 v1.3.6 稳定版
 (() => {
     'use strict';
 
@@ -13,6 +13,7 @@
     let timerInterval = null;
     let seconds = 0;
     let muted = false;
+    let savedGameSize = null;
 
     // ===== UNIFIED MODE SYSTEM =====
     const MODE_NONE  = null;
@@ -106,12 +107,21 @@
 
     // ===== MENU BUTTONS =====
     byId('btn-new-game').onclick = () => {
-        if (settings.askSize) byId('modal-size').classList.remove('hidden');
-        else startGame(settings.gridSize);
+        const saved = Storage.getSavedGame();
+        if (saved) {
+            showNewGameConfirm(saved.score);
+        } else {
+            if (settings.askSize) byId('modal-size').classList.remove('hidden');
+            else startGame(settings.gridSize);
+        }
+    };
+
+    byId('btn-continue-game').onclick = () => {
+        continueSavedGame();
     };
     byId('btn-settings').onclick = () => { showPage('settings'); renderSettings(); };
     byId('btn-leaderboard').onclick = () => { showPage('leaderboard'); renderLeaderboard(0); };
-    byId('btn-back-menu').onclick = () => { stopTimer(); exitMode(); hideHint(); showPage('menu'); };
+    byId('btn-back-menu').onclick = () => { showExitConfirm(); };
     byId('btn-game-restart').onclick = () => {
         if (!game || gameOver) return;
         stopTimer();
@@ -138,21 +148,186 @@
         if (toast) toast.classList.remove('show');
         if (backToastTimer) { clearTimeout(backToastTimer); backToastTimer = null; }
     };
-    window.addEventListener('popstate', e => {
-        if (!byId('page-game').classList.contains('active')) return;
-        // 如果 toast 已显示，说明是第二次按返回，真正退出
-        const toast = byId('back-toast');
-        if (toast && toast.classList.contains('show')) {
-            hideBackToast();
+
+    const showExitConfirm = () => {
+        if (!game || gameOver) {
             stopTimer();
             exitMode();
             hideHint();
+            byId('modal-size').classList.add('hidden');
+            checkSavedGame();
             showPage('menu');
             return;
         }
-        // 第一次按返回：显示提示并阻止退出
-        showBackToast();
+
+        const overlay = byId('overlay');
+        const title = byId('overlay-title');
+        const msg = byId('overlay-msg');
+        const btns = byId('overlay-buttons');
+
+        title.textContent = '退出游戏';
+        msg.textContent = `当前分数：${game.score}，选择退出方式：`;
+        btns.innerHTML = `
+            <button class="btn btn-primary" id="exit-save">保存离开</button>
+            <button class="btn btn-secondary" id="exit-settle">结算退出</button>
+            <button class="btn btn-secondary" id="exit-cancel">取消</button>
+        `;
+        overlay.classList.remove('hidden');
+
+        byId('exit-save').onclick = () => {
+            overlay.classList.add('hidden');
+            saveCurrentGame();
+            stopTimer();
+            exitMode();
+            hideHint();
+            byId('modal-size').classList.add('hidden');
+            checkSavedGame();
+            showPage('menu');
+        };
+
+        byId('exit-settle').onclick = () => {
+            overlay.classList.add('hidden');
+            stopTimer();
+            saveScore();
+            Storage.clearSavedGame();
+            exitMode();
+            hideHint();
+            byId('modal-size').classList.add('hidden');
+            checkSavedGame();
+            showPage('menu');
+        };
+
+        byId('exit-cancel').onclick = () => {
+            overlay.classList.add('hidden');
+        };
+    };
+
+    const saveCurrentGame = () => {
+        if (!game) return;
+        const gameState = {
+            grid: game.getState().grid,
+            score: game.score,
+            won: game.won,
+            size: game.size,
+            seconds: seconds,
+            modeState: JSON.parse(JSON.stringify(modeState))
+        };
+        Storage.saveGame(gameState);
+        savedGameSize = game.size;
+    };
+
+    const loadSavedGame = () => {
+        const saved = Storage.getSavedGame();
+        if (!saved) return null;
+        return saved;
+    };
+
+    const showNewGameConfirm = (savedScore) => {
+        const modal = byId('modal-confirm');
+        const title = byId('modal-confirm-title');
+        const msg = byId('modal-confirm-msg');
+        const btns = byId('modal-confirm-buttons');
+
+        byId('modal-size').classList.add('hidden');
+
+        title.textContent = '检测到未完成的游戏';
+        msg.textContent = `当前保存的游戏分数：${savedScore}，如何处理？`;
+        btns.innerHTML = `
+            <button class="btn btn-primary" id="ng-confirm-ok">结算并开始新游戏</button>
+            <button class="btn btn-secondary" id="ng-confirm-continue">继续上一局</button>
+            <button class="btn btn-secondary" id="ng-confirm-cancel">取消</button>
+        `;
+        modal.classList.remove('hidden');
+
+        byId('ng-confirm-ok').onclick = () => {
+            modal.classList.add('hidden');
+            const saved = Storage.getSavedGame();
+            if (saved) {
+                saveScoreFromSaved(saved);
+            }
+            Storage.clearSavedGame();
+            checkSavedGame();
+            if (settings.askSize) byId('modal-size').classList.remove('hidden');
+            else startGame(settings.gridSize);
+        };
+
+        byId('ng-confirm-continue').onclick = () => {
+            modal.classList.add('hidden');
+            continueSavedGame();
+        };
+
+        byId('ng-confirm-cancel').onclick = () => {
+            modal.classList.add('hidden');
+            checkSavedGame();
+        };
+    };
+
+    const saveScoreFromSaved = (saved) => {
+        Storage.addScore({
+            score: saved.score,
+            gridSize: saved.size,
+            time: formatTime(saved.seconds),
+            date: new Date().toISOString()
+        });
+    };
+
+    const formatTime = (seconds) => {
+        const m = Math.floor(seconds / 60), s = seconds % 60;
+        return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    };
+
+    const continueSavedGame = () => {
+        const saved = Storage.getSavedGame();
+        if (!saved) return;
+
+        game = new Game(saved.size);
+        game.grid = JSON.parse(JSON.stringify(saved.grid));
+        game.score = saved.score;
+        game.won = saved.won;
+
+        gameOver = false;
+        hasWon = saved.won;
+        currentMode = MODE_NONE;
+        const savedModeState = saved.modeState || {};
+        modeState.smash = savedModeState.smash || { count: 0, accum: 1 };
+        modeState.swap = savedModeState.swap || { count: 0, accum: 1, firstTile: null };
+        modeState.clear = savedModeState.clear || { count: 0, accum: 1 };
+        modeState.double = savedModeState.double || { count: 0, accum: 1 };
+        modeState.undo = savedModeState.undo || { count: 0, accum: 1 };
+
+        seconds = saved.seconds;
+        resetTimer();
+        startTimer();
+
+        updateScore();
+        updateModeUI();
+        hideHint();
+        hideBackToast();
+
         history.pushState({ page: 'game' }, '', '');
+
+        byId('overlay').classList.add('hidden');
+        byId('modal-size').classList.add('hidden');
+        buildBoard();
+        updateAbilityButtons();
+        showPage('game');
+    };
+
+    const checkSavedGame = () => {
+        const saved = Storage.getSavedGame();
+        const continueBtn = byId('btn-continue-game');
+        if (saved) {
+            continueBtn.style.display = 'block';
+            savedGameSize = saved.size;
+        } else {
+            continueBtn.style.display = 'none';
+            savedGameSize = null;
+        }
+    };
+
+    window.addEventListener('popstate', e => {
+        if (!byId('page-game').classList.contains('active')) return;
+        showExitConfirm();
     });
 
     // ===== UNDO =====
@@ -1000,7 +1175,10 @@
             m.textContent = '没有可移动的格子了';
             b.innerHTML = '<button class="btn btn-primary" id="ov-retry">再来一局</button><button class="btn btn-secondary" id="ov-back">返回菜单</button>';
             byId('ov-retry').onclick = () => { startGame(game.size); };
-            byId('ov-back').onclick = () => { showPage('menu'); };
+            byId('ov-back').onclick = () => {
+                checkSavedGame();
+                showPage('menu');
+            };
         }
         o.classList.remove('hidden');
     };
@@ -1242,5 +1420,6 @@
     byId('volume-slider').value = settings.volume;
     byId('volume-value').textContent = `${settings.volume}%`;
     byId('toggle-ask-size').checked = settings.askSize;
+    checkSavedGame();
     showPage('menu');
 })();

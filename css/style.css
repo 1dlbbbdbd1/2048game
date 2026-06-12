@@ -265,6 +265,20 @@ body {
     color: var(--text);
 }
 
+.modal-msg {
+    font-size: 15px;
+    color: #a0948c;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.modal-confirm-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
 .modal-size-grid {
     display: flex;
     flex-wrap: wrap;
