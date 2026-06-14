@@ -212,7 +212,8 @@
             won: game.won,
             size: game.size,
             seconds: seconds,
-            modeState: JSON.parse(JSON.stringify(modeState))
+            modeState: JSON.parse(JSON.stringify(modeState)),
+            undoState: game.undoState ? JSON.parse(JSON.stringify(game.undoState)) : null
         };
         Storage.saveGame(gameState);
     };
@@ -279,6 +280,7 @@
         game.grid = JSON.parse(JSON.stringify(saved.grid));
         game.score = saved.score;
         game.won = saved.won;
+        game.undoState = saved.undoState || null;
 
         gameOver = false;
         hasWon = saved.won;
@@ -958,6 +960,10 @@
         else resumeGame();
     });
     byId('pause-overlay').onclick = () => resumeGame();
+    byId('btn-pause').onclick = () => {
+        if (!game || gameOver || isPaused) return;
+        pauseGame();
+    };
 
     // ===== KEYBOARD =====
     document.addEventListener('keydown', e => {
