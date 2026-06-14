@@ -1,6 +1,6 @@
 {
   "name": "game2048",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "一个 2048 数字合并游戏，支持 Web 浏览器、Windows exe 离线版，5 种特殊能力和游戏存档。",
   "main": "main.js",
   "scripts": {

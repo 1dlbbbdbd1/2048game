@@ -303,6 +303,8 @@
         history.pushState({ page: 'game' }, '', '');
 
         byId('overlay').classList.add('hidden');
+        byId('pause-overlay').classList.add('hidden');
+        isPaused = false;
         byId('modal-size').classList.add('hidden');
         buildBoard();
         updateAbilityButtons();
@@ -942,17 +944,20 @@
         if (isPaused) return;
         stopTimer();
         isPaused = true;
+        byId('pause-overlay').classList.remove('hidden');
     };
     const resumeGame = () => {
         if (!isPaused) return;
-        if (!byId('page-game').classList.contains('active') || !game || gameOver) { isPaused = false; return; }
+        if (!byId('page-game').classList.contains('active') || !game || gameOver) { isPaused = false; byId('pause-overlay').classList.add('hidden'); return; }
         startTimer();
         isPaused = false;
+        byId('pause-overlay').classList.add('hidden');
     };
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) pauseGame();
         else resumeGame();
     });
+    byId('pause-overlay').onclick = () => resumeGame();
 
     // ===== KEYBOARD =====
     document.addEventListener('keydown', e => {
@@ -982,6 +987,8 @@
         history.pushState({ page: 'game' }, '', '');
 
         byId('overlay').classList.add('hidden');
+        byId('pause-overlay').classList.add('hidden');
+        isPaused = false;
         buildBoard();
 
         // 同步更新按钮状态（角标与禁用/启用由 updateAbilityButtons 统一管理，避免旧角标残留）
