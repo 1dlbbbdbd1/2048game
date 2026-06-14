@@ -12,31 +12,31 @@ const Storage = (() => {
         askSize: true,
         // 敲击模式
         smashMode: 'cost',
-        smashMultiplier: 5,
-        smashIncrement: 50,
+        smashMultiplier: 2,
+        smashIncrement: 30,
         smashLimit: 3,
         // 交换模式
         swapMode: 'cost',
-        swapMultiplier: 5,
-        swapIncrement: 50,
+        swapMultiplier: 2,
+        swapIncrement: 30,
         swapLimit: 3,
         // 清除模式
         clearMode: 'cost',
-        clearMultiplier: 5,
-        clearIncrement: 50,
+        clearMultiplier: 2,
+        clearIncrement: 30,
         clearLimit: 3,
         // 翻倍模式
         doubleMode: 'cost',
-        doubleMultiplier: 5,
-        doubleIncrement: 50,
+        doubleMultiplier: 2,
+        doubleIncrement: 30,
         doubleLimit: 3,
         // 撤销模式
         undoMode: 'cost',
-        undoMultiplier: 5,
-        undoIncrement: 50,
+        undoMultiplier: 2,
+        undoIncrement: 30,
         undoLimit: 3,
         // 配置版本号（用于版本迁移，确保新默认设置对所有用户生效）
-        version: 2
+        version: 3
     };
 
     function getSettings() {

@@ -291,7 +291,8 @@
         modeState.undo = savedModeState.undo || { count: 0, accum: 1 };
 
         seconds = saved.seconds;
-        resetTimer();
+        stopTimer();
+        updateTimerDisplay();
         startTimer();
 
         updateScore();
@@ -935,6 +936,24 @@
         byId('timer').textContent = formatTime(seconds);
     };
 
+    // ===== PAUSE (失焦/后台暂停计时) =====
+    let isPaused = false;
+    const pauseGame = () => {
+        if (isPaused) return;
+        stopTimer();
+        isPaused = true;
+    };
+    const resumeGame = () => {
+        if (!isPaused) return;
+        if (!byId('page-game').classList.contains('active') || !game || gameOver) { isPaused = false; return; }
+        startTimer();
+        isPaused = false;
+    };
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) pauseGame();
+        else resumeGame();
+    });
+
     // ===== KEYBOARD =====
     document.addEventListener('keydown', e => {
         if (!byId('page-game').classList.contains('active')) return;
@@ -1389,9 +1408,18 @@
     });
 
     // ===== ANDROID BACK BUTTON =====
+    let lastBackPress = 0;
     document.addEventListener('backbutton', () => {
         if (byId('page-game').classList.contains('active')) {
-            showExitConfirm();
+            const now = Date.now();
+            if (now - lastBackPress < 2000) {
+                hideBackToast();
+                showExitConfirm();
+                lastBackPress = 0;
+            } else {
+                showBackToast();
+                lastBackPress = now;
+            }
         } else if (byId('page-settings').classList.contains('active') ||
                    byId('page-leaderboard').classList.contains('active')) {
             showPage('menu');
