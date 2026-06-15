@@ -1408,6 +1408,8 @@
         if (target.closest('button, .btn, .btn-icon, .action-bar, input, label, .toggle-switch, select, textarea')) return;
         // 只拦截棋盘区域内的滑动（用于游戏控制）
         if (!target.closest('.board-wrapper')) return;
+        // 能力模式下不阻止触摸移动，否则 click 事件无法触发，导致方块点击失效
+        if (currentMode) return;
         e.preventDefault();
     }, { passive: false });
     
