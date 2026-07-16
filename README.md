@@ -151,6 +151,39 @@
 
 ---
 
+## 🧭 协作现状
+
+> 更新时间：2026-07-16  
+> 当前协作对话 ID：`019f6b05-0f84-7832-bc99-46ecc466dab6`  
+> 远端仓库：[1dlbbbdbd1/2048game](https://github.com/1dlbbbdbd1/2048game)
+
+### 当前仓库状态
+- 工作目录：`E:\codex\2048`
+- Git 分支：`main`
+- 远端：`origin https://github.com/1dlbbbdbd1/2048game.git`
+- 当前版本：`package.json` 标记为 `2.1.3`
+- 项目类型：原生 HTML/CSS/JavaScript 游戏，附带 Electron 桌面端与 Capacitor Android 打包配置
+
+### 现有接口与边界
+- 页面接口集中在 `index.html` 的 DOM id/class 上，`js/app.js` 通过 `byId()` 绑定页面、按钮、弹窗、棋盘和工具栏事件。
+- 游戏核心接口由 `js/game.js` 的 `Game` 类提供，包含移动、撤销、敲击、交换、清除、翻倍、胜负判断和棋盘状态读写。
+- 持久化接口由 `js/storage.js` 的 `Storage` 对象提供，封装设置、排行榜、最高分和游戏存档的 LocalStorage 读写。
+- 桌面端入口是 `main.js`，只负责 Electron 窗口创建与加载 `index.html`。
+- Android 端通过 `capacitor.config.json` 与 npm 脚本 `cap:copy` / `cap:sync` 同步 Web 资源。
+
+### 当前进度
+- 已从远端仓库克隆到本地工作目录。
+- 已确认 README、源码与 `package.json` 是 UTF-8 编码；PowerShell 默认读取时可能出现乱码，读取中文内容需指定 `-Encoding UTF8`。
+- 暂未收到新的功能改动需求，因此未修改业务代码。
+- 暂未执行依赖安装、启动或打包验证；后续涉及功能改动时，应至少做本地页面/核心流程验证，并按风险补充更具体测试。
+
+### 后续协作规则
+- 每次功能、修复、打包或发布相关改动，都要同步更新本节或版本历史。
+- 修改前先查现有 DOM、Game、Storage、Electron/Capacitor 配置接口，优先复用现有结构。
+- 涉及用户体验、规则平衡或玩法取舍时，先把产品含义说清楚，再动代码。
+
+---
+
 ## 🛠 技术栈
 
 | 技术 | 用途 |
