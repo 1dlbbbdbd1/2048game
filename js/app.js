@@ -727,6 +727,7 @@
             playTone(150, 0.2, 'sawtooth', 0.15); return;
         }
 
+        game.undoState = game.getState();
         applyCost(MODE_SMASH, cost);
         playTone(100, 0.15, 'square', 0.25);
 
@@ -820,13 +821,6 @@
             exitMode(); return;
         }
 
-        const removed = game.clearTiles();
-        if (removed.length === 0) {
-            playTone(180, 0.2, 'triangle', 0.1);
-            exitMode(); return;
-        }
-
-        const totalValue = removed.reduce((s, t) => s + t.value, 0);
         const cost = getCost(MODE_CLEAR);
 
         if (getModeSetting(MODE_CLEAR, 'modeKey') === 'cost' && cost > game.score) {
@@ -834,8 +828,14 @@
             exitMode(); return;
         }
 
-        // 保存 undo state
-        game.undoState = game.getState();
+        const prevState = game.getState();
+        const removed = game.clearTiles();
+        if (removed.length === 0) {
+            playTone(180, 0.2, 'triangle', 0.1);
+            exitMode(); return;
+        }
+
+        game.undoState = prevState;
 
         applyCost(MODE_CLEAR, cost);
         playTone(200, 0.18, 'triangle', 0.22);
@@ -1369,18 +1369,24 @@
         } else {
             table.style.display = '';
             empty.classList.add('hidden');
-            body.innerHTML = '';
+            body.textContent = '';
             filtered.forEach((e, i) => {
                 const d = new Date(e.date);
-                body.innerHTML += `
-                    <tr>
-                        <td class="col-rank">${i + 1}</td>
-                        <td class="col-score">${e.score}</td>
-                        <td>${e.gridSize}x${e.gridSize}</td>
-                        <td>${e.time}</td>
-                        <td>${d.getMonth() + 1}/${d.getDate()}</td>
-                    </tr>
-                `;
+                const dateText = Number.isNaN(d.getTime()) ? '-' : `${d.getMonth() + 1}/${d.getDate()}`;
+                const row = document.createElement('tr');
+                [
+                    { text: i + 1, className: 'col-rank' },
+                    { text: e.score, className: 'col-score' },
+                    { text: `${e.gridSize}x${e.gridSize}` },
+                    { text: e.time },
+                    { text: dateText }
+                ].forEach(cell => {
+                    const td = document.createElement('td');
+                    if (cell.className) td.className = cell.className;
+                    td.textContent = cell.text == null ? '' : String(cell.text);
+                    row.appendChild(td);
+                });
+                body.appendChild(row);
             });
         }
         
