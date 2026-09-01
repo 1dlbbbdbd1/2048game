@@ -276,14 +276,15 @@
         const saved = Storage.getSavedGame();
         if (!saved) return;
 
-        game = new Game(saved.size);
-        game.grid = JSON.parse(JSON.stringify(saved.grid));
-        game.score = saved.score;
-        game.won = saved.won;
-        game.undoState = saved.undoState || null;
+        const restoredGame = Game.fromSavedState(saved);
+        if (!restoredGame) {
+            Storage.clearSavedGame();
+            return;
+        }
+        game = restoredGame;
 
         gameOver = false;
-        hasWon = saved.won;
+        hasWon = game.won;
         currentMode = MODE_NONE;
         const savedModeState = saved.modeState || {};
         modeState.smash = savedModeState.smash || { count: 0, accum: 1 };
@@ -292,7 +293,7 @@
         modeState.double = savedModeState.double || { count: 0, accum: 1 };
         modeState.undo = savedModeState.undo || { count: 0, accum: 1 };
 
-        seconds = saved.seconds;
+        seconds = Number.isSafeInteger(saved.seconds) && saved.seconds >= 0 ? saved.seconds : 0;
         stopTimer();
         updateTimerDisplay();
         startTimer();

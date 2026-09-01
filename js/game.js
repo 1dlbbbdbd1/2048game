@@ -18,6 +18,48 @@ class Game {
         this.addRandomTile();
     }
 
+    static fromSavedState(saved) {
+        if (!saved || typeof saved !== 'object') return null;
+        const size = saved.size;
+        if (!Number.isInteger(size) || size < 4 || size > 8) return null;
+
+        const normalizeState = (state) => {
+            if (!state || typeof state !== 'object' || !Array.isArray(state.grid) || state.grid.length !== size) {
+                return null;
+            }
+            const grid = [];
+            for (let r = 0; r < size; r++) {
+                const sourceRow = state.grid[r];
+                if (!Array.isArray(sourceRow) || sourceRow.length !== size) return null;
+                const row = [];
+                for (let c = 0; c < size; c++) {
+                    const tile = sourceRow[c];
+                    if (tile === null) {
+                        row.push(null);
+                        continue;
+                    }
+                    const value = tile && tile.value;
+                    const isPowerOfTwo = Number.isSafeInteger(value) && value >= 2 && (Math.log2(value) % 1 === 0);
+                    if (!isPowerOfTwo) return null;
+                    row.push({ value, r, c, mergedFrom: null, isNew: false });
+                }
+                grid.push(row);
+            }
+            if (!Number.isSafeInteger(state.score) || state.score < 0) return null;
+            return { grid, score: state.score, won: state.won === true };
+        };
+
+        const current = normalizeState(saved);
+        if (!current) return null;
+        const restored = Object.create(Game.prototype);
+        restored.size = size;
+        restored.grid = current.grid;
+        restored.score = current.score;
+        restored.won = current.won;
+        restored.undoState = saved.undoState ? normalizeState(saved.undoState) : null;
+        return restored;
+    }
+
     addRandomTile() {
         const empty = [];
         for (let r = 0; r < this.size; r++) {
@@ -257,4 +299,8 @@ class Game {
         }
         return max;
     }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Game;
 }
